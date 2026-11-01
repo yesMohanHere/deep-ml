@@ -1,17 +1,18 @@
-def matrix_dot_vector(
-    a: list[list[int | float]], b: list[int | float]
-) -> list[int | float] | int:
-    """Return a list where each element is the dot product of a row of 'a' with 'b'.
+import torch
 
-    If the number of columns in 'a' does not match the length of 'b', return -1.
+
+def matrix_dot_vector(a, b) -> torch.Tensor:
+    """Compute the product of matrix `a` and vector `b` using PyTorch.
+
+    Inputs can be Python lists, NumPy arrays, or torch Tensors. Returns a 1-D
+    tensor of length m, or tensor(-1) if dimensions mismatch.
     """
-    # Verify non-empty matrix and matching dimensions
-    if not a or len(a[0]) != len(b):
-        return -1
+    a_t = torch.as_tensor(a, dtype=torch.float)
+    b_t = torch.as_tensor(b, dtype=torch.float)
 
-    # Ensure every row matches the vector length (guards against ragged matrices)
-    if any(len(row) != len(b) for row in a):
-        return -1
+    # Ensure `a_t` is 2-D, `b_t` is 1-D, and inner dimensions match
+    if a_t.ndim != 2 or b_t.ndim != 1 or a_t.size(1) != b_t.size(0):
+        return torch.tensor(-1)
 
-    # Compute dot product of each row with b
-    return [sum(x * y for x, y in zip(row, b)) for row in a]
+    # torch.mv computes the matrix-vector product
+    return torch.mv(a_t, b_t)
